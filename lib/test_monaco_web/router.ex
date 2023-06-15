@@ -18,6 +18,11 @@ defmodule TestMonacoWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    live "/queries", QueryLive.Index, :index
+    live "/queries/new", QueryLive.Index, :new
+    live "/queries/:id/edit", QueryLive.Index, :edit
+    live "/queries/:id", QueryLive.Show, :show
+    live "/queries/:id/show/edit", QueryLive.Show, :edit
   end
 
   # Other scopes may use custom stacks.

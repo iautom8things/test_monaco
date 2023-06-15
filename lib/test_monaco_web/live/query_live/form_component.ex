@@ -3,6 +3,9 @@ defmodule TestMonacoWeb.QueryLive.FormComponent do
 
   alias TestMonaco.Queries
 
+  @new_query_path "new_query.sql"
+  defp new_query_path, do: @new_query_path
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -19,9 +22,20 @@ defmodule TestMonacoWeb.QueryLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:query]} type="text" label="Query" />
+        <LiveMonacoEditor.code_editor
+          value={@query.query}
+          opts={
+            Map.merge(
+              LiveMonacoEditor.default_opts(),
+              %{"language" => "sql"}
+            )
+          }
+          id={"edit-#{@myself}"}
+          data-id={"edit-#{@myself}"}
+          path={new_query_path()}
+        />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Query</.button>
+          <.button phx-disable-with="Saving..." phx-target={@myself}>Save Query</.button>
         </:actions>
       </.simple_form>
     </div>
@@ -39,7 +53,16 @@ defmodule TestMonacoWeb.QueryLive.FormComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"query" => query_params}, socket) do
+  def handle_event(
+        "validate",
+        %{
+          "_target" => ["live_monaco_editor", @new_query_path],
+          "live_monaco_editor" => %{@new_query_path => content}
+        },
+        socket
+      ) do
+    query_params = %{"query" => content}
+
     changeset =
       socket.assigns.query
       |> Queries.change_query(query_params)
@@ -48,7 +71,14 @@ defmodule TestMonacoWeb.QueryLive.FormComponent do
     {:noreply, assign_form(socket, changeset)}
   end
 
-  def handle_event("save", %{"query" => query_params}, socket) do
+  def handle_event(
+        "save",
+        %{
+          "live_monaco_editor" => %{@new_query_path => content}
+        },
+        socket
+      ) do
+    query_params = %{"query" => content}
     save_query(socket, socket.assigns.action, query_params)
   end
 

@@ -3,7 +3,10 @@ defmodule TestMonaco.Queries.Query do
   import Ecto.Changeset
 
   schema "queries" do
-    field :query, :string
+    field :query, :string, default: ~S"this
+    is
+    default!!
+    "
 
     timestamps()
   end
